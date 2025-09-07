@@ -985,9 +985,16 @@ def visualize_tree_and_blocks2(root, blocks):
 ################################################################################
 if __name__ == "__main__":
     ############################################################################
-    NETLIST_FILE = "C:\\Users\\wolfg\\iCloudDrive\\Documents\\CVUT\\Diplomka\\Codes\\share\\case1.netlist"
-    SYMMETRY_FILE = "C:\\Users\\wolfg\\iCloudDrive\\Documents\\CVUT\\Diplomka\\Codes\\share\\case1.sym"
-    BLOCK_FILE = "C:\\Users\\wolfg\\iCloudDrive\\Documents\\CVUT\\Diplomka\\Codes\\share\\case1.block"
+    #NETLIST_FILE = "C:\\Users\\wolfg\\iCloudDrive\\Documents\\CVUT\\Diplomka\\Codes\\LAB1_py_v1\\case1.netlist"
+    #SYMMETRY_FILE = "C:\\Users\\wolfg\\iCloudDrive\\Documents\\CVUT\\Diplomka\\Codes\\LAB1_py_v1\\case1.sym"
+    #BLOCK_FILE = "C:\\Users\\wolfg\\iCloudDrive\\Documents\\CVUT\\Diplomka\\Codes\\LAB1_py_v1\\case1.block"
+
+    #SET VARIABLE PATH FOR BETTER PORTABILITY
+    import os
+
+    NETLIST_FILE = os.path.join(os.path.dirname(__file__), "case1.netlist")
+    SYMMETRY_FILE = os.path.join(os.path.dirname(__file__), "case1.sym")
+    BLOCK_FILE = os.path.join(os.path.dirname(__file__), "case1.block")
 
     ############################################################################
     tree = top_BStarTree()
