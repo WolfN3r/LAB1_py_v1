@@ -51,6 +51,7 @@ class PA3Cost:
     def __init__(self, expected_aspect_ratio):
         self.expected_aspect_ratio = expected_aspect_ratio
 
+    # wmi TODO: check how it calculates penalty for overlap
     def __call__(self, tree):
         w = tree.get_width()
         h = tree.get_height()

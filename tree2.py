@@ -558,7 +558,8 @@ class top_BStarTree:
                 units[i].r_child = units[i + 1]
             units[-1].l_child = None
             units[-1].r_child = None
-
+    # wmi TODO: check contour-based packing algorithm
+    # here could be problem with placement of the second block
     class PackorSquare:
         def __init__(self, hbtree):
             self.contours_ = ContourList()
@@ -656,6 +657,8 @@ class top_BStarTree:
             return False
         self.nets = loader.get_nets()
         # dba TODO: understand why loader.get_nodes() is needed and what it does
+        # it creates topology_btrees from blocks and symmetry constraints
+        # it filters block by symmetry constraints
         self.topology_btrees = loader.get_nodes()
         for topology_btree in self.topology_btrees:
             for unit in topology_btree.units:
