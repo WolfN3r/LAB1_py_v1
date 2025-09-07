@@ -1,0 +1,14 @@
+.SUBCKT CASE1 Vb1 Vb2 Vb3 Vb4 Vin Vip Vo gnd! vdd!
+- MM0 net5 Vin net3 vdd! PMOS W=4.8u L=0.5u m=8
+- MM1 net8 Vip net3 vdd! PMOS W=4.8u L=0.5u m=8
+- MM2 net5 Vb4 gnd! gnd! NMOS W=4u L=0.5u m=1
+- MM3 net8 Vb4 gnd! gnd! NMOS W=4u L=0.5u m=1
+- MM4 Vo Vb3 net5 gnd! NMOS W=4u L=0.5u m=4
+- MM5 net23 Vb3 net8 gnd! NMOS W=4u L=0.5u m=4
+- MM6 Vo net23 net24 vdd! PMOS W=3.5u L=0.5u m=2
+- MM7 net23 net23 net27 vdd! PMOS W=3.5u L=0.5u m=2
+- MM8 net24 net27 vdd! vdd! PMOS W=3.5u L=0.5u m=2
+MM9 net27 net27 vdd! vdd! PMOS W=3.5u L=0.5u m=2
+- MM10 net3 Vb2 net2 vdd! PMOS W=4.8u L=0.5u m=10
+- MM11 net2 Vb1 vdd! vdd! PMOS W=4.8u L=0.5u m=2
+.ENDS
