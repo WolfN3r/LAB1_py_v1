@@ -935,9 +935,10 @@ def visualize_tree_and_blocks(root, blocks):
     plt.tight_layout()
     plt.show()
 
+# wmi HINTME: function used for visualization of tree and blocks
 def visualize_tree_and_blocks2(root, blocks):
     fig, (ax_blocks, ax_tree) = plt.subplots(1, 2, figsize=(12, 6))
-
+    import numpy as np
     # --- Bloky vlevo ---
     min_x = min(block.min_x for block in blocks)
     max_x = max(block.min_x + block.width for block in blocks)
@@ -948,7 +949,10 @@ def visualize_tree_and_blocks2(root, blocks):
         y = block.min_y
         w = block.width
         h = block.height
-        rect = plt.Rectangle((x, y), w, h, fill=False, edgecolor='blue')
+        #rect = plt.Rectangle((x, y), w, h, fill=False, edgecolor='blue')
+        # wmi HINTME: added fill inside the rectangle to better see overlapping blocks
+        color = np.random.rand(3, )  # náhodná RGB barva
+        rect = plt.Rectangle((x, y), w, h, fill=True, facecolor=color, edgecolor='blue', alpha=0.2)
         ax_blocks.add_patch(rect)
         ax_blocks.text(x + w / 2, y + h / 2, block.name, ha='center', va='center', fontsize=8)
     ax_blocks.set_xlim(min_x, max_x)
