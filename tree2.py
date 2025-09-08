@@ -995,9 +995,11 @@ if __name__ == "__main__":
     #SET VARIABLE PATH FOR BETTER PORTABILITY
     import os
 
-    NETLIST_FILE = os.path.join(os.path.dirname(__file__), "case1.netlist")
-    SYMMETRY_FILE = os.path.join(os.path.dirname(__file__), "case1.sym")
-    BLOCK_FILE = os.path.join(os.path.dirname(__file__), "case1.block")
+    basename = "test"  # Change to your file base name
+
+    NETLIST_FILE = os.path.join(os.path.dirname(__file__), f"{basename}.netlist")
+    SYMMETRY_FILE = os.path.join(os.path.dirname(__file__), f"{basename}.sym")
+    BLOCK_FILE = os.path.join(os.path.dirname(__file__), f"{basename}.block")
 
     ############################################################################
     tree = top_BStarTree()
