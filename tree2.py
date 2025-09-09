@@ -1,5 +1,5 @@
 import random
-import networkx as nx
+#import networkx as nx
 import matplotlib.pyplot as plt
 import math
 
@@ -516,6 +516,8 @@ class top_BStarTree:
         self.root = None
         self.rng = random.Random()
 
+    # wmi HINTME: basic block placement for first solution
+    # here could be problem with placement of the second block
     def NaivePlacement(self):
         x0 = 0.0
         x1 = 0.0
@@ -592,6 +594,7 @@ class top_BStarTree:
                 asfbtree.r_child.bbox.set_min_x(asfbtree.bbox.get_min_x())
                 self.PackDFS(asfbtree.r_child, asfbtree.begin)
 
+        # wmi HINTME: horizontal placement of blocks
         def PackPass1(self, asfbtree, unit):
             if not unit:
                 return
@@ -614,6 +617,7 @@ class top_BStarTree:
             self.PackPass1(asfbtree, l_child)
             self.PackPass1(asfbtree, r_child)
 
+        # wmi HINTME: vertical placement of blocks
         def PackPass2(self, asfbtree, unit, l_hint, r_hint):
             if not unit:
                 return
