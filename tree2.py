@@ -664,6 +664,7 @@ class top_BStarTree:
             r_half = unit.r_half
             r_half.MoveCenterXTo(asfbtree.bbox.GetCenterX())
             unit.r_hint = unit.l_hint = self.contours_.MaxElement(r_half.get_min_x(), r_half.get_max_x(), ContourList.Node.OffsetLess)
+            # wmi HINTME: offset has the wrong value for second block
             feasible_min_y = unit.r_hint.offset if unit.r_hint is not None else 0.0
             #feasible_min_y = asfbtree.root.r_half.get_min_y()
             r_half.MoveMinYTo(feasible_min_y)
