@@ -22,24 +22,46 @@ class BuildingBlock:
         self.variants = []
 
     def MoveCenterXTo(self, x):
+        old_pos = (self.min_x, self.max_x, self.min_y, self.max_y)
         w = self.get_width()
         self.min_x = x - w * 0.5
         self.max_x = x + w * 0.5
+        self._print_movement(old_pos, (self.min_x, self.max_x, self.min_y, self.max_y))
 
     def MoveMinXTo(self, x):
+        old_pos = (self.min_x, self.max_x, self.min_y, self.max_y)
         w = self.get_width()
         self.min_x = x
         self.max_x = x + w
+        self._print_movement(old_pos, (self.min_x, self.max_x, self.min_y, self.max_y))
 
     def MoveMaxXTo(self, x):
+        old_pos = (self.min_x, self.max_x, self.min_y, self.max_y)
         w = self.get_width()
         self.max_x = x
         self.min_x = x - w
+        self._print_movement(old_pos, (self.min_x, self.max_x, self.min_y, self.max_y))
 
     def MoveMinYTo(self, y):
+        old_pos = (self.min_x, self.max_x, self.min_y, self.max_y)
         h = self.get_height()
         self.min_y = y
         self.max_y = y + h
+        self._print_movement(old_pos, (self.min_x, self.max_x, self.min_y, self.max_y))
+
+    def _print_movement(self, old_pos, new_pos):
+        """Print block movement if position actually changed"""
+        old_min_x, old_max_x, old_min_y, old_max_y = old_pos
+        new_min_x, new_max_x, new_min_y, new_max_y = new_pos
+
+        # Check if position actually changed (with small tolerance for floating point)
+        tolerance = 1e-6
+        if (abs(old_min_x - new_min_x) > tolerance or
+                abs(old_max_x - new_max_x) > tolerance or
+                abs(old_min_y - new_min_y) > tolerance or
+                abs(old_max_y - new_max_y) > tolerance):
+            print(
+                f"{self.name} ({old_min_x:.6f} {old_max_x:.6f} {old_min_y:.6f} {old_max_y:.6f}) -> ({new_min_x:.6f} {new_max_x:.6f} {new_min_y:.6f} {new_max_y:.6f})")
 
     def get_min_x(self):
         return self.min_x
@@ -372,8 +394,11 @@ class Perturbator:
         if not self.perturb_funcs:
             return
 
+        print("=== Block Movements during Perturbation ===")
+
         for block in self.blocks:
             if hasattr(block, "variants") and block.variants:
+                old_pos = (block.min_x, block.max_x, block.min_y, block.max_y)
                 variant = random.choice(block.variants)
                 block.current_variant = variant
                 block.width = variant[0]
@@ -385,6 +410,11 @@ class Perturbator:
                 block.min_y = 0.0
                 block.max_x = block.width
                 block.max_y = block.height
+                new_pos = (block.min_x, block.max_x, block.min_y, block.max_y)
+
+                # Print variant change if position changed
+                if old_pos != new_pos:
+                    print(f"{block.name} ({old_pos[0]:.6f} {old_pos[1]:.6f} {old_pos[2]:.6f} {old_pos[3]:.6f}) -> ({new_pos[0]:.6f} {new_pos[1]:.6f} {new_pos[2]:.6f} {new_pos[3]:.6f}) [variant change]")
 
         # equivalent of std::discrete_distribution
         num_perturb = self.rng.randint(1, len(self.perturb_funcs))
@@ -500,6 +530,7 @@ class Packor:
         self.packor_square = top_BStarTree.PackorSquare(hbtree)
 
     def __call__(self):
+        print("=== Block Movements during Packing ===")
         self.packor_square()
 
 ################################################################################
@@ -768,10 +799,17 @@ class top_BStarTree:
         name_to_block = {block.name: block for block in self.blocks}
         for name, min_x, min_y, max_x, max_y in placement:
             block = name_to_block[name]
+            old_pos = (block.min_x, block.max_x, block.min_y, block.max_y)
             block.min_x = min_x
             block.min_y = min_y
             block.max_x = max_x
             block.max_y = max_y
+            new_pos = (block.min_x, block.max_x, block.min_y, block.max_y)
+
+            # Print movement when restoring placement
+            if old_pos != new_pos:
+                print(
+                    f"{block.name} ({old_pos[0]:.6f} {old_pos[1]:.6f} {old_pos[2]:.6f} {old_pos[3]:.6f}) -> ({new_pos[0]:.6f} {new_pos[1]:.6f} {new_pos[2]:.6f} {new_pos[3]:.6f}) [placement restore]")
 
     def optimize(self, cost_fn, timer, patience=10000000):
         placement = self.save_placement()
@@ -780,7 +818,13 @@ class top_BStarTree:
         cost = cost_fn(self)
         reject_count = 0
 
+        print(f"=== Starting Optimization (Initial Cost: {cost:.6f}) ===")
+        iteration = 0
+
         while not timer.is_timeout() and reject_count < patience:
+            iteration += 1
+            print(f"\n--- Optimization Iteration {iteration} ---")
+
             # print(f"aaan\n")
             perturbator()
             packor()
@@ -789,10 +833,13 @@ class top_BStarTree:
                 cost = new_cost
                 placement = self.save_placement()
                 reject_count = 0
+                print(f"Improvement found! New cost: {cost:.6f}")
             else:
+                print(f"No improvement (cost: {new_cost:.6f}), restoring previous placement")
                 self.load_placement(placement)
                 reject_count += 1
 
+        print(f"=== Optimization Finished (Final Cost: {cost:.6f}, Iterations: {iteration}) ===")
         Packor(self)()  # Znovu umístí bloky podle stromu !!! added by dba
 
 
