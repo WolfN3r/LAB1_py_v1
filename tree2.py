@@ -1,5 +1,5 @@
 import random
-import networkx as nx
+#import networkx as nx
 import matplotlib.pyplot as plt
 import math
 
@@ -22,24 +22,46 @@ class BuildingBlock:
         self.variants = []
 
     def MoveCenterXTo(self, x):
+        old_pos = (self.min_x, self.max_x, self.min_y, self.max_y)
         w = self.get_width()
         self.min_x = x - w * 0.5
         self.max_x = x + w * 0.5
+        self._print_movement(old_pos, (self.min_x, self.max_x, self.min_y, self.max_y))
 
     def MoveMinXTo(self, x):
+        old_pos = (self.min_x, self.max_x, self.min_y, self.max_y)
         w = self.get_width()
         self.min_x = x
         self.max_x = x + w
+        self._print_movement(old_pos, (self.min_x, self.max_x, self.min_y, self.max_y))
 
     def MoveMaxXTo(self, x):
+        old_pos = (self.min_x, self.max_x, self.min_y, self.max_y)
         w = self.get_width()
         self.max_x = x
         self.min_x = x - w
+        self._print_movement(old_pos, (self.min_x, self.max_x, self.min_y, self.max_y))
 
     def MoveMinYTo(self, y):
+        old_pos = (self.min_x, self.max_x, self.min_y, self.max_y)
         h = self.get_height()
         self.min_y = y
         self.max_y = y + h
+        self._print_movement(old_pos, (self.min_x, self.max_x, self.min_y, self.max_y))
+
+    def _print_movement(self, old_pos, new_pos):
+        """Print block movement if position actually changed"""
+        old_min_x, old_max_x, old_min_y, old_max_y = old_pos
+        new_min_x, new_max_x, new_min_y, new_max_y = new_pos
+
+        # Check if position actually changed (with small tolerance for floating point)
+        tolerance = 1e-6
+        if (abs(old_min_x - new_min_x) > tolerance or
+                abs(old_max_x - new_max_x) > tolerance or
+                abs(old_min_y - new_min_y) > tolerance or
+                abs(old_max_y - new_max_y) > tolerance):
+            print(
+                f"{self.name} ({old_min_x:.6f} {old_max_x:.6f} {old_min_y:.6f} {old_max_y:.6f}) -> ({new_min_x:.6f} {new_max_x:.6f} {new_min_y:.6f} {new_max_y:.6f})")
 
     def get_min_x(self):
         return self.min_x
@@ -372,8 +394,11 @@ class Perturbator:
         if not self.perturb_funcs:
             return
 
+        print("=== Block Movements during Perturbation ===")
+
         for block in self.blocks:
             if hasattr(block, "variants") and block.variants:
+                old_pos = (block.min_x, block.max_x, block.min_y, block.max_y)
                 variant = random.choice(block.variants)
                 block.current_variant = variant
                 block.width = variant[0]
@@ -385,6 +410,11 @@ class Perturbator:
                 block.min_y = 0.0
                 block.max_x = block.width
                 block.max_y = block.height
+                new_pos = (block.min_x, block.max_x, block.min_y, block.max_y)
+
+                # Print variant change if position changed
+                if old_pos != new_pos:
+                    print(f"{block.name} ({old_pos[0]:.6f} {old_pos[1]:.6f} {old_pos[2]:.6f} {old_pos[3]:.6f}) -> ({new_pos[0]:.6f} {new_pos[1]:.6f} {new_pos[2]:.6f} {new_pos[3]:.6f}) [variant change]")
 
         # equivalent of std::discrete_distribution
         num_perturb = self.rng.randint(1, len(self.perturb_funcs))
@@ -500,6 +530,7 @@ class Packor:
         self.packor_square = top_BStarTree.PackorSquare(hbtree)
 
     def __call__(self):
+        print("=== Block Movements during Packing ===")
         self.packor_square()
 
 ################################################################################
@@ -516,6 +547,8 @@ class top_BStarTree:
         self.root = None
         self.rng = random.Random()
 
+    # wmi HINTME: basic block placement for first solution
+    # here could be problem with placement of the second block
     def NaivePlacement(self):
         x0 = 0.0
         x1 = 0.0
@@ -558,7 +591,8 @@ class top_BStarTree:
                 units[i].r_child = units[i + 1]
             units[-1].l_child = None
             units[-1].r_child = None
-
+    # wmi TODO: check contour-based packing algorithm
+    # here could be problem with placement of the second block
     class PackorSquare:
         def __init__(self, hbtree):
             self.contours_ = ContourList()
@@ -591,6 +625,7 @@ class top_BStarTree:
                 asfbtree.r_child.bbox.set_min_x(asfbtree.bbox.get_min_x())
                 self.PackDFS(asfbtree.r_child, asfbtree.begin)
 
+        # wmi HINTME: horizontal placement of blocks
         def PackPass1(self, asfbtree, unit):
             if not unit:
                 return
@@ -613,6 +648,7 @@ class top_BStarTree:
             self.PackPass1(asfbtree, l_child)
             self.PackPass1(asfbtree, r_child)
 
+        # wmi HINTME: vertical placement of blocks
         def PackPass2(self, asfbtree, unit, l_hint, r_hint):
             if not unit:
                 return
@@ -628,6 +664,7 @@ class top_BStarTree:
             r_half = unit.r_half
             r_half.MoveCenterXTo(asfbtree.bbox.GetCenterX())
             unit.r_hint = unit.l_hint = self.contours_.MaxElement(r_half.get_min_x(), r_half.get_max_x(), ContourList.Node.OffsetLess)
+            # wmi HINTME: offset has the wrong value for second block
             feasible_min_y = unit.r_hint.offset if unit.r_hint is not None else 0.0
             #feasible_min_y = asfbtree.root.r_half.get_min_y()
             r_half.MoveMinYTo(feasible_min_y)
@@ -656,6 +693,8 @@ class top_BStarTree:
             return False
         self.nets = loader.get_nets()
         # dba TODO: understand why loader.get_nodes() is needed and what it does
+        # it creates topology_btrees from blocks and symmetry constraints
+        # it filters block by symmetry constraints
         self.topology_btrees = loader.get_nodes()
         for topology_btree in self.topology_btrees:
             for unit in topology_btree.units:
@@ -761,10 +800,17 @@ class top_BStarTree:
         name_to_block = {block.name: block for block in self.blocks}
         for name, min_x, min_y, max_x, max_y in placement:
             block = name_to_block[name]
+            old_pos = (block.min_x, block.max_x, block.min_y, block.max_y)
             block.min_x = min_x
             block.min_y = min_y
             block.max_x = max_x
             block.max_y = max_y
+            new_pos = (block.min_x, block.max_x, block.min_y, block.max_y)
+
+            # Print movement when restoring placement
+            if old_pos != new_pos:
+                print(
+                    f"{block.name} ({old_pos[0]:.6f} {old_pos[1]:.6f} {old_pos[2]:.6f} {old_pos[3]:.6f}) -> ({new_pos[0]:.6f} {new_pos[1]:.6f} {new_pos[2]:.6f} {new_pos[3]:.6f}) [placement restore]")
 
     def optimize(self, cost_fn, timer, patience=10000000):
         placement = self.save_placement()
@@ -773,7 +819,13 @@ class top_BStarTree:
         cost = cost_fn(self)
         reject_count = 0
 
+        print(f"=== Starting Optimization (Initial Cost: {cost:.6f}) ===")
+        iteration = 0
+
         while not timer.is_timeout() and reject_count < patience:
+            iteration += 1
+            print(f"\n--- Optimization Iteration {iteration} ---")
+
             # print(f"aaan\n")
             perturbator()
             packor()
@@ -782,10 +834,13 @@ class top_BStarTree:
                 cost = new_cost
                 placement = self.save_placement()
                 reject_count = 0
+                print(f"Improvement found! New cost: {cost:.6f}")
             else:
+                print(f"No improvement (cost: {new_cost:.6f}), restoring previous placement")
                 self.load_placement(placement)
                 reject_count += 1
 
+        print(f"=== Optimization Finished (Final Cost: {cost:.6f}, Iterations: {iteration}) ===")
         Packor(self)()  # Znovu umístí bloky podle stromu !!! added by dba
 
 
@@ -932,9 +987,10 @@ def visualize_tree_and_blocks(root, blocks):
     plt.tight_layout()
     plt.show()
 
+# wmi HINTME: function used for visualization of tree and blocks
 def visualize_tree_and_blocks2(root, blocks):
     fig, (ax_blocks, ax_tree) = plt.subplots(1, 2, figsize=(12, 6))
-
+    import numpy as np
     # --- Bloky vlevo ---
     min_x = min(block.min_x for block in blocks)
     max_x = max(block.min_x + block.width for block in blocks)
@@ -945,7 +1001,10 @@ def visualize_tree_and_blocks2(root, blocks):
         y = block.min_y
         w = block.width
         h = block.height
-        rect = plt.Rectangle((x, y), w, h, fill=False, edgecolor='blue')
+        #rect = plt.Rectangle((x, y), w, h, fill=False, edgecolor='blue')
+        # wmi HINTME: added fill inside the rectangle to better see overlapping blocks
+        color = np.random.rand(3, )  # náhodná RGB barva
+        rect = plt.Rectangle((x, y), w, h, fill=True, facecolor=color, edgecolor='blue', alpha=0.2)
         ax_blocks.add_patch(rect)
         ax_blocks.text(x + w / 2, y + h / 2, block.name, ha='center', va='center', fontsize=8)
     ax_blocks.set_xlim(min_x, max_x)
@@ -985,9 +1044,18 @@ def visualize_tree_and_blocks2(root, blocks):
 ################################################################################
 if __name__ == "__main__":
     ############################################################################
-    NETLIST_FILE = "C:\\Users\\wolfg\\iCloudDrive\\Documents\\CVUT\\Diplomka\\Codes\\share\\case1.netlist"
-    SYMMETRY_FILE = "C:\\Users\\wolfg\\iCloudDrive\\Documents\\CVUT\\Diplomka\\Codes\\share\\case1.sym"
-    BLOCK_FILE = "C:\\Users\\wolfg\\iCloudDrive\\Documents\\CVUT\\Diplomka\\Codes\\share\\case1.block"
+    #NETLIST_FILE = "C:\\Users\\wolfg\\iCloudDrive\\Documents\\CVUT\\Diplomka\\Codes\\LAB1_py_v1\\case1.netlist"
+    #SYMMETRY_FILE = "C:\\Users\\wolfg\\iCloudDrive\\Documents\\CVUT\\Diplomka\\Codes\\LAB1_py_v1\\case1.sym"
+    #BLOCK_FILE = "C:\\Users\\wolfg\\iCloudDrive\\Documents\\CVUT\\Diplomka\\Codes\\LAB1_py_v1\\case1.block"
+
+    #SET VARIABLE PATH FOR BETTER PORTABILITY
+    import os
+
+    basename = "test"  # Change to your file base name
+
+    NETLIST_FILE = os.path.join(os.path.dirname(__file__), f"{basename}.netlist")
+    SYMMETRY_FILE = os.path.join(os.path.dirname(__file__), f"{basename}.sym")
+    BLOCK_FILE = os.path.join(os.path.dirname(__file__), f"{basename}.block")
 
     ############################################################################
     tree = top_BStarTree()

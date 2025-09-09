@@ -1,0 +1,5 @@
+.SUBCKT TEST Vb3 Vb4 gnd! vdd!
+- MM1 net8 Vb4 gnd! gnd! NMOS W=4u L=0.5u m=1
+- MM2 Vo Vb3 net5 gnd! NMOS W=4u L=0.5u m=4
+- MM3 net5 Vb4 gnd! gnd! NMOS W=4u L=0.5u m=1
+.ENDS
