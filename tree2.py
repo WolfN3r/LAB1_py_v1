@@ -591,6 +591,38 @@ class top_BStarTree:
                 units[i].r_child = units[i + 1]
             units[-1].l_child = None
             units[-1].r_child = None
+
+        self.print_tree_structure()
+
+
+    def print_tree_structure(self):
+        print("\n=== Initial B* Tree Structure ===")
+
+        def print_node(node):
+            if node == self.root:
+                for unit in node.units:
+                    print(f"{unit.r_half.name} - root unit")
+                    if unit.l_half != unit.r_half:
+                        print(f"{unit.l_half.name} - symmetry pair with {unit.r_half.name}")
+
+            # Vytiskni potomky a jejich jednotky
+            if node.l_child:
+                for unit in node.l_child.units:
+                    print(f"{unit.r_half.name} - left child")
+                    if unit.l_half != unit.r_half:
+                        print(f"{unit.l_half.name} - symmetry pair with {unit.r_half.name}")
+                print_node(node.l_child)
+
+            if node.r_child:
+                for unit in node.r_child.units:
+                    print(f"{unit.r_half.name} - right child")
+                    if unit.l_half != unit.r_half:
+                        print(f"{unit.l_half.name} - symmetry pair with {unit.r_half.name}")
+                print_node(node.r_child)
+
+        print_node(self.root)
+        print("===========================\n")
+
     # wmi TODO: check contour-based packing algorithm
     # here could be problem with placement of the second block
     class PackorSquare:
@@ -1051,7 +1083,7 @@ if __name__ == "__main__":
     #SET VARIABLE PATH FOR BETTER PORTABILITY
     import os
 
-    basename = "test"  # Change to your file base name
+    basename = "case1"  # Change to your file base name
 
     NETLIST_FILE = os.path.join(os.path.dirname(__file__), f"{basename}.netlist")
     SYMMETRY_FILE = os.path.join(os.path.dirname(__file__), f"{basename}.sym")
