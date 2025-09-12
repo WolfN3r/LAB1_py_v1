@@ -567,7 +567,7 @@ class top_BStarTree:
                 unit.l_half.MoveMinYTo(y)
                 x0 = min(x0, unit.l_half.get_min_x())
                 x1 = max(x1, unit.r_half.get_max_x())
-            y += representative.get_height()
+                y += representative.get_height()
         self.set_min_x(x0).set_min_y(0.0).set_max_x(x1).set_max_y(y)
 
     def BuildTree(self):
